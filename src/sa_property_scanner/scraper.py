@@ -141,14 +141,10 @@ class ScraperOrchestrator:
             price_change_count,
         )
 
-    async def _upsert_listing(
-        self, session: AsyncSession, source_name: str, raw: RawListing
-    ) -> tuple[bool, bool]:
+    async def _upsert_listing(self, session: AsyncSession, source_name: str, raw: RawListing) -> tuple[bool, bool]:
         """Insert or update a listing. Returns (is_new, is_price_change)."""
         result = await session.execute(
-            select(Listing).where(
-                and_(Listing.source == source_name, Listing.external_id == raw.external_id)
-            )
+            select(Listing).where(and_(Listing.source == source_name, Listing.external_id == raw.external_id))
         )
         existing: Listing | None = result.scalar_one_or_none()
 
@@ -209,9 +205,7 @@ class ScraperOrchestrator:
             return False, True
         return False, False
 
-    async def _notify(
-        self, event_type: str, raw: RawListing, source_name: str, session: AsyncSession
-    ) -> None:
+    async def _notify(self, event_type: str, raw: RawListing, source_name: str, session: AsyncSession) -> None:
         """Dispatch notifications to all configured channels."""
         if not self.notifiers:
             return
@@ -221,9 +215,7 @@ class ScraperOrchestrator:
             return
         self._notified_ids.add(dedup_key)
         result = await session.execute(
-            select(Listing).where(
-                and_(Listing.source == source_name, Listing.external_id == raw.external_id)
-            )
+            select(Listing).where(and_(Listing.source == source_name, Listing.external_id == raw.external_id))
         )
         listing = result.scalar_one()
         notes = self._detect_amenities(raw)
@@ -243,5 +235,6 @@ class ScraperOrchestrator:
 def run_scan() -> None:
     """Synchronous entrypoint for the scan orchestrator."""
     import asyncio
+
     orchestrator = ScraperOrchestrator()
     asyncio.run(orchestrator.run())

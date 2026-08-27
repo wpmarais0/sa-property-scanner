@@ -40,9 +40,7 @@ class Listing(Base):
     agent_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     first_seen_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    last_seen_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=func.now(), onupdate=func.now()
-    )
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     price_history: Mapped[list["PriceHistory"]] = relationship(
         "PriceHistory", back_populates="listing", cascade="all, delete-orphan"

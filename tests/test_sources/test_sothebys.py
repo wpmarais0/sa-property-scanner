@@ -1,6 +1,5 @@
 """Tests for the Sotheby's source adapter."""
 
-
 from sa_property_scanner.sources.sothebys import SothebysSource
 
 SAMPLE_HTML = """
@@ -59,9 +58,7 @@ SAMPLE_HTML = """
 
 def test_sothebys_parse():
     """Sotheby's adapter should extract listings from real HTML structure."""
-    source = SothebysSource(
-        search_url="https://www.sothebysrealty.co.za/results/residential/for-sale"
-    )
+    source = SothebysSource(search_url="https://www.sothebysrealty.co.za/results/residential/for-sale")
     listings = source.parse(SAMPLE_HTML)
 
     assert len(listings) == 3
@@ -102,8 +99,6 @@ def test_sothebys_parse():
 
 def test_sothebys_empty_html():
     """Empty HTML should return an empty list without crashing."""
-    source = SothebysSource(
-        search_url="https://www.sothebysrealty.co.za/results/residential/for-sale"
-    )
+    source = SothebysSource(search_url="https://www.sothebysrealty.co.za/results/residential/for-sale")
     listings = source.parse("<html><body></body></html>")
     assert listings == []

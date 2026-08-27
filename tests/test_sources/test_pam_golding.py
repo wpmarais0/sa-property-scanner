@@ -1,6 +1,5 @@
 """Tests for the Pam Golding source adapter."""
 
-
 from sa_property_scanner.sources.pam_golding import PamGoldingSource
 
 SAMPLE_HTML = """

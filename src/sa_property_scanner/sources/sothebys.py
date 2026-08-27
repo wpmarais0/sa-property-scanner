@@ -54,8 +54,16 @@ class SothebysSource(SourceAdapter):
                 property_type = None
                 if title:
                     type_keywords = [
-                        "house", "apartment", "townhouse", "villa", "plot",
-                        "land", "farm", "freehold", "duplex", "penthouse",
+                        "house",
+                        "apartment",
+                        "townhouse",
+                        "villa",
+                        "plot",
+                        "land",
+                        "farm",
+                        "freehold",
+                        "duplex",
+                        "penthouse",
                     ]
                     title_lower = title.lower()
                     for kw in type_keywords:

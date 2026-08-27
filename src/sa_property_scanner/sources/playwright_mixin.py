@@ -48,9 +48,7 @@ class PlaywrightMixin:
         await stealth(page)
         return page
 
-    async def _intercept_api_response(
-        self, page: Page, url_pattern: str
-    ) -> dict[str, Any] | None:
+    async def _intercept_api_response(self, page: Page, url_pattern: str) -> dict[str, Any] | None:
         """Navigate to the search URL and intercept a matching API response."""
         intercepted_data: dict[str, Any] | None = None
 

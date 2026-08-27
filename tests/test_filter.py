@@ -126,10 +126,7 @@ class TestGarageFilter:
 
 class TestCombinedFilter:
     def test_all_criteria_met(self, orchestrator):
-        raw = RawListing(
-            external_id="x", url="y", price=1_500_000,
-            bedrooms=3, bathrooms=2, property_type="house"
-        )
+        raw = RawListing(external_id="x", url="y", price=1_500_000, bedrooms=3, bathrooms=2, property_type="house")
         with (
             patch("sa_property_scanner.scraper.settings.max_price", 1_800_000),
             patch("sa_property_scanner.scraper.settings.bedrooms_min", 3),
@@ -139,10 +136,7 @@ class TestCombinedFilter:
             assert orchestrator._passes_filter(raw) is True
 
     def test_one_criteria_fails(self, orchestrator):
-        raw = RawListing(
-            external_id="x", url="y", price=2_000_000,
-            bedrooms=3, bathrooms=2, property_type="house"
-        )
+        raw = RawListing(external_id="x", url="y", price=2_000_000, bedrooms=3, bathrooms=2, property_type="house")
         with (
             patch("sa_property_scanner.scraper.settings.max_price", 1_800_000),
             patch("sa_property_scanner.scraper.settings.bedrooms_min", 3),

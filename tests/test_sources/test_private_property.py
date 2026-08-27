@@ -1,6 +1,5 @@
 """Tests for the Private Property source adapter."""
 
-
 from sa_property_scanner.sources.private_property import PrivatePropertySource
 
 SAMPLE_HTML = """
@@ -56,9 +55,7 @@ SAMPLE_HTML = """
 
 def test_private_property_parse():
     """Private Property adapter should extract listings from JSON-LD + HTML fallback."""
-    source = PrivatePropertySource(
-        search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4"
-    )
+    source = PrivatePropertySource(search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4")
     listings = source.parse(SAMPLE_HTML)
 
     assert len(listings) == 2
@@ -87,9 +84,7 @@ def test_private_property_parse():
 
 def test_private_property_empty_html():
     """Empty HTML should return an empty list without crashing."""
-    source = PrivatePropertySource(
-        search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4"
-    )
+    source = PrivatePropertySource(search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4")
     listings = source.parse("<html><body></body></html>")
     assert listings == []
 
@@ -108,9 +103,7 @@ def test_private_property_no_price_fallback():
     </script>
     </body></html>
     """
-    source = PrivatePropertySource(
-        search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4"
-    )
+    source = PrivatePropertySource(search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4")
     listings = source.parse(html)
     assert len(listings) == 1
     assert listings[0].external_id == "T9999999"

@@ -32,9 +32,9 @@ class DiscordNotifier(Notifier):
 
         # Determine embed color based on event type
         color_map = {
-            "new_listing": "00ff00",      # Green
-            "price_drop": "ff6600",       # Orange
-            "price_increase": "ff0000",   # Red
+            "new_listing": "00ff00",  # Green
+            "price_drop": "ff6600",  # Orange
+            "price_increase": "ff0000",  # Red
         }
         color = color_map.get(payload.event_type, "0099ff")  # Default blue
 
@@ -55,9 +55,7 @@ class DiscordNotifier(Notifier):
         embed.set_timestamp()
 
         # Add price field
-        price_display = listing.price_text or (
-            f"R {listing.price:,.0f}" if listing.price else "Price on request"
-        )
+        price_display = listing.price_text or (f"R {listing.price:,.0f}" if listing.price else "Price on request")
         embed.add_embed_field(name="💰 Price", value=price_display, inline=True)
 
         # Add bedrooms if available
@@ -70,21 +68,15 @@ class DiscordNotifier(Notifier):
 
         # Add property type if available
         if listing.property_type:
-            embed.add_embed_field(
-                name="🏠 Type", value=listing.property_type.title(), inline=True
-            )
+            embed.add_embed_field(name="🏠 Type", value=listing.property_type.title(), inline=True)
 
         # Add size if available
         if listing.size_sqm:
-            embed.add_embed_field(
-                name="📐 Size", value=f"{listing.size_sqm} m²", inline=True
-            )
+            embed.add_embed_field(name="📐 Size", value=f"{listing.size_sqm} m²", inline=True)
 
         # Add garages if available
         if listing.garages:
-            embed.add_embed_field(
-                name="🚗 Garages", value=str(listing.garages), inline=True
-            )
+            embed.add_embed_field(name="🚗 Garages", value=str(listing.garages), inline=True)
 
         # Add soft amenity notes if detected
         if payload.amenity_notes:
@@ -96,9 +88,7 @@ class DiscordNotifier(Notifier):
 
         # Add agent if available
         if listing.agent_name:
-            embed.add_embed_field(
-                name="🏢 Agent", value=listing.agent_name, inline=False
-            )
+            embed.add_embed_field(name="🏢 Agent", value=listing.agent_name, inline=False)
 
         # Event type label
         event_labels = {

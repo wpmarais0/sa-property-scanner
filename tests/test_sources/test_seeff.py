@@ -1,6 +1,5 @@
 """Tests for the Seeff source adapter."""
 
-
 from sa_property_scanner.sources.seeff import SeeffSource
 
 SAMPLE_HTML = """
@@ -64,10 +63,7 @@ def test_seeff_parse():
     assert first.bedrooms == 3
     assert first.bathrooms == 2
     assert first.image_url == "https://cdn.example.com/img1.jpg"
-    assert first.url == (
-        "https://www.seeff.com/results/residential/for-sale/"
-        "tulbagh/tulbagh/farm/1918694/"
-    )
+    assert first.url == ("https://www.seeff.com/results/residential/for-sale/tulbagh/tulbagh/farm/1918694/")
 
     second = listings[1]
     assert second.external_id == "2993410"

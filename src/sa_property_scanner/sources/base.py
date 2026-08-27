@@ -42,10 +42,7 @@ class SourceAdapter(ABC):
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
                 "Chrome/122.0.0.0 Safari/537.36"
             ),
-            "Accept": (
-                "text/html,application/xhtml+xml,application/xml;"
-                "q=0.9,image/avif,image/webp,*/*;q=0.8"
-            ),
+            "Accept": ("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"),
             "Accept-Language": "en-ZA,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
             "DNT": "1",
@@ -77,13 +74,7 @@ class SourceAdapter(ABC):
         """Extract the first integer sequence from a price string (handles R, spaces, commas)."""
         if not text:
             return None
-        cleaned = (
-            text.replace("R", "")
-            .replace(" ", "")
-            .replace(",", "")
-            .replace("\xa0", "")
-            .strip()
-        )
+        cleaned = text.replace("R", "").replace(" ", "").replace(",", "").replace("\xa0", "").strip()
         digits = "".join(ch for ch in cleaned if ch.isdigit())
         return int(digits) if digits else None
 

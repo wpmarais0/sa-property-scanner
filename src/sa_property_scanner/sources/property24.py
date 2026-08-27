@@ -28,6 +28,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
             return base_url
         # Remove any existing /pN suffix first
         import re
+
         clean = re.sub(r"/p\d+$", "", base_url.rstrip("/"))
         return f"{clean}/p{page}"
 
@@ -45,6 +46,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
 
     def _playwright_timeout(self) -> int:
         from sa_property_scanner.config import settings
+
         return settings.playwright_timeout
 
     def parse(self, html: str) -> list[RawListing]:
