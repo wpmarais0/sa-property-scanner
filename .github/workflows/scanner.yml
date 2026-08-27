@@ -1,0 +1,63 @@
+name: Scheduled Scanner
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # Every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: poetry run alembic upgrade head
+
+      - name: Run scanner
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PROPERTY24_ENABLED: ${{ vars.PROPERTY24_ENABLED }}
+          PROPERTY24_SEARCH_URL: ${{ vars.PROPERTY24_SEARCH_URL }}
+          PRIVATE_PROPERTY_ENABLED: ${{ vars.PRIVATE_PROPERTY_ENABLED }}
+          PRIVATE_PROPERTY_SEARCH_URL: ${{ vars.PRIVATE_PROPERTY_SEARCH_URL }}
+          PAM_GOLDING_ENABLED: ${{ vars.PAM_GOLDING_ENABLED }}
+          PAM_GOLDING_SEARCH_URL: ${{ vars.PAM_GOLDING_SEARCH_URL }}
+          SEEFF_ENABLED: ${{ vars.SEEFF_ENABLED }}
+          SEEFF_SEARCH_URL: ${{ vars.SEEFF_SEARCH_URL }}
+          SOTHEBYS_ENABLED: ${{ vars.SOTHEBYS_ENABLED }}
+          SOTHEBYS_SEARCH_URL: ${{ vars.SOTHEBYS_SEARCH_URL }}
+          MIN_PRICE: ${{ vars.MIN_PRICE }}
+          MAX_PRICE: ${{ vars.MAX_PRICE }}
+          BEDROOMS_MIN: ${{ vars.BEDROOMS_MIN }}
+          BEDROOMS_MAX: ${{ vars.BEDROOMS_MAX }}
+          BATHROOMS_MIN: ${{ vars.BATHROOMS_MIN }}
+          BATHROOMS_MAX: ${{ vars.BATHROOMS_MAX }}
+          GARAGE_MIN: ${{ vars.GARAGE_MIN }}
+          PET_FRIENDLY: ${{ vars.PET_FRIENDLY }}
+          OWN_YARD: ${{ vars.OWN_YARD }}
+          FIBRE_INTERNET: ${{ vars.FIBRE_INTERNET }}
+          PROPERTY_TYPES: ${{ vars.PROPERTY_TYPES }}
+          PAGINATION_MAX_PAGES: ${{ vars.PAGINATION_MAX_PAGES }}
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+        run: poetry run property-scanner scan

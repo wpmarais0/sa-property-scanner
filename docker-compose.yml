@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: scanner
+      POSTGRES_PASSWORD: scanner
+      POSTGRES_DB: properties
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scanner -d properties"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  scanner:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://scanner:scanner@db:5432/properties
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./properties.db:/app/properties.db
+    command: ["property-scanner", "scan"]
+
+volumes:
+  postgres_data:
