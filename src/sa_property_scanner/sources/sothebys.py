@@ -80,14 +80,14 @@ class SothebysSource(SourceAdapter):
                     text_lower = text.lower()
 
                     if bedrooms is None and "bed" in text_lower and text[0].isdigit():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bedrooms = int(digits) if digits else None
+                        digits = "".join(ch for ch in text if ch.isdigit() or ch == ".")
+                        bedrooms = int(float(digits)) if digits else None
                     elif bathrooms is None and "bath" in text_lower and text[0].isdigit():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bathrooms = int(digits) if digits else None
+                        digits = "".join(ch for ch in text if ch.isdigit() or ch == ".")
+                        bathrooms = int(float(digits)) if digits else None
                     elif garage is None and "parking" in text_lower and text[0].isdigit():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        garage = int(digits) if digits else None
+                        digits = "".join(ch for ch in text if ch.isdigit() or ch == ".")
+                        garage = int(float(digits)) if digits else None
                     elif size_sqm is None and "m\u00b2" in text:
                         digits = "".join(ch for ch in text if ch.isdigit() and ch != "\u00b2")
                         size_sqm = int(digits) if digits else None

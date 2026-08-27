@@ -88,8 +88,8 @@ async def test_upsert_price_change(db_session, sample_listing):
     assert is_new is False
     assert is_price_change is True
 
-    # Two price history records
+    # One price history record (only the change)
     result = await db_session.execute(select(PriceHistory).where(PriceHistory.listing_id == sample_listing.id))
     histories = result.scalars().all()
-    assert len(histories) == 2
+    assert len(histories) == 1
     assert histories[-1].price == 2_200_000
