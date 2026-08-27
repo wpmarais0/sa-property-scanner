@@ -1,5 +1,7 @@
 """Database engine, session management, and declarative base."""
 
+from collections.abc import AsyncGenerator
+
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
@@ -42,7 +44,7 @@ async def init_db() -> None:
     logger.info("Database initialised.")
 
 
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Yield an async database session."""
     async with AsyncSessionLocal() as session:
         yield session

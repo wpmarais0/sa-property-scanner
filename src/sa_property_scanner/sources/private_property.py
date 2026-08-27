@@ -27,7 +27,7 @@ class PrivatePropertySource(SourceAdapter):
         """Fetch search result page HTML."""
         return self._http_get(url)
 
-    def parse(self, html: str) -> list[RawListing]:
+    def parse(self, html: str) -> list[RawListing]:  # type: ignore[override]
         """Parse listings from JSON-LD scripts and HTML fallback."""
         soup = BeautifulSoup(html, "html.parser")
         listings: list[RawListing] = []

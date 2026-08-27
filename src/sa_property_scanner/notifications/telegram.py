@@ -19,7 +19,7 @@ class TelegramNotifier(Notifier):
 
     def __init__(self) -> None:
         self.bot = telegram.Bot(token=settings.telegram_bot_token)  # type: ignore[arg-type]
-        self.chat_id = settings.telegram_chat_id
+        self.chat_id: str | int = settings.telegram_chat_id or ""
 
     @retry(
         stop=stop_after_attempt(3),

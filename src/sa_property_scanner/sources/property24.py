@@ -32,7 +32,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
         clean = re.sub(r"/p\d+$", "", base_url.rstrip("/"))
         return f"{clean}/p{page}"
 
-    async def fetch(self, url: str) -> str:
+    async def fetch(self, url: str) -> str:  # type: ignore[override]
         """Navigate to the search page and return rendered HTML."""
         context = await self._launch_browser()
         try:
@@ -49,7 +49,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
 
         return settings.playwright_timeout
 
-    def parse(self, html: str) -> list[RawListing]:
+    def parse(self, html: str) -> list[RawListing]:  # type: ignore[override]
         """Parse listings from HTML, trying JSON first then direct HTML."""
         soup = BeautifulSoup(html, "html.parser")
         next_script = soup.find("script", id="__NEXT_DATA__")
@@ -110,12 +110,12 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
 
         for tile in tiles:
             try:
-                listing_id = tile.get("data-listing-number", "").lstrip("P")
+                listing_id = str(tile.get("data-listing-number", "")).lstrip("P")
                 if not listing_id:
                     continue
 
                 link_tag = tile.select_one('a[href^="/for-sale/"]')
-                href = link_tag.get("href") if link_tag else None
+                href = str(link_tag.get("href")) if link_tag else None
                 url_abs = self._make_absolute_url("https://www.property24.com", href)
 
                 price_tag = tile.select_one(".p24_price")
@@ -135,7 +135,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
 
                 bedrooms = bathrooms = None
                 for feat in tile.select(".p24_featureDetails"):
-                    feat_title = feat.get("title", "").lower()
+                    feat_title = str(feat.get("title", "")).lower()
                     count_span = feat.select_one("span")
                     count = int(count_span.get_text(strip=True)) if count_span else None
                     if "bedroom" in feat_title:
@@ -144,7 +144,7 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
                         bathrooms = count
 
                 img_tag = tile.select_one("img.js_P24_listingImage")
-                image_url = img_tag.get("src") if img_tag else None
+                image_url = str(img_tag.get("src")) if img_tag else None
 
                 listings.append(
                     RawListing(

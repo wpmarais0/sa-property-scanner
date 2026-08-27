@@ -34,6 +34,7 @@ def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
         handler.setLevel(level)
 
         # Use JSON formatter if LOG_FORMAT=json, else human-readable
+        fmt: logging.Formatter
         if sys.stdout.isatty():
             fmt = ConsoleFormatter(
                 fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",

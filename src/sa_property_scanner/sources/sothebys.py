@@ -21,7 +21,7 @@ class SothebysSource(SourceAdapter):
         """Fetch search result page HTML."""
         return self._http_get(url)
 
-    def parse(self, html: str) -> list[RawListing]:
+    def parse(self, html: str) -> list[RawListing]:  # type: ignore[override]
         """Parse listing cards from HTML into RawListing objects."""
         soup = BeautifulSoup(html, "html.parser")
         listings: list[RawListing] = []
@@ -35,15 +35,15 @@ class SothebysSource(SourceAdapter):
                 if not external_id:
                     continue
 
-                href = card.get("href")
+                href = str(card.get("href")) if card.get("href") else None
                 url_abs = self._make_absolute_url(self.search_url, href)
 
                 price_tag = card.select_one(".card-price")
-                price_text = price_tag.get_text(strip=True) if price_tag else None
+                price_text = str(price_tag.get_text(strip=True)) if price_tag else None
                 price = self._extract_price(price_text)
 
                 desc_tag = card.select_one(".card-description")
-                title = desc_tag.get_text(strip=True) if desc_tag else None
+                title = str(desc_tag.get_text(strip=True)) if desc_tag else None
 
                 # Location is usually in the title, e.g. "... For Sale in Sandy Point"
                 location = None

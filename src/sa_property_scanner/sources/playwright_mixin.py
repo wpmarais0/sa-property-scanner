@@ -4,7 +4,7 @@ import contextlib
 import json
 from typing import Any
 
-from playwright.async_api import BrowserContext, Page, async_playwright
+from playwright.async_api import BrowserContext, Page, Request, Route, async_playwright
 from playwright_stealth import stealth
 
 from sa_property_scanner.config import settings
@@ -52,7 +52,7 @@ class PlaywrightMixin:
         """Navigate to the search URL and intercept a matching API response."""
         intercepted_data: dict[str, Any] | None = None
 
-        async def handle_route(route, request):
+        async def handle_route(route: Route, request: Request) -> None:
             nonlocal intercepted_data
             response = await route.fetch()
             body = await response.text()

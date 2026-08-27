@@ -12,6 +12,7 @@ from sa_property_scanner.models import Listing, PriceHistory, ScanLog
 from sa_property_scanner.notifications import get_notifiers
 from sa_property_scanner.schemas import ListingRead, NotificationPayload, RawListing
 from sa_property_scanner.sources import get_enabled_sources
+from sa_property_scanner.sources.base import SourceAdapter
 
 logger = get_logger(__name__)
 
@@ -80,7 +81,7 @@ class ScraperOrchestrator:
                 await self._process_source(session, source)
             await session.commit()
 
-    async def _process_source(self, session: AsyncSession, source) -> None:
+    async def _process_source(self, session: AsyncSession, source: SourceAdapter) -> None:
         """Fetch, parse, deduplicate, and notify for a single source."""
         log = ScanLog(source=source.name)
         session.add(log)
@@ -94,7 +95,7 @@ class ScraperOrchestrator:
             try:
                 logger.info("Fetching %s page %d ...", source.name, page)
                 if source.mode == "playwright":
-                    data = await source.fetch(page_url)
+                    data = await source.fetch(page_url)  # type: ignore[misc]
                 else:
                     data = source.fetch(page_url)
                 page_listings = source.parse(data)

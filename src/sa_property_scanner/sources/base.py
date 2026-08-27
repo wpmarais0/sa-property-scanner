@@ -78,15 +78,31 @@ class SourceAdapter(ABC):
         digits = "".join(ch for ch in cleaned if ch.isdigit())
         return int(digits) if digits else None
 
-    def _make_absolute_url(self, base_url: str, href: str | None) -> str | None:
+    def _make_absolute_url(self, base_url: str, href: object) -> str | None:
         """Convert a potentially relative URL to absolute."""
         if not href:
             return None
-        if href.startswith("http"):
-            return href
+        href_str = str(href).strip()
+        if href_str.startswith("http"):
+            return href_str
         from urllib.parse import urljoin
 
-        return urljoin(base_url, href)
+        return urljoin(base_url, href_str)
+
+    @staticmethod
+    def _bs_text(value: object) -> str:
+        """Safely convert a BeautifulSoup value to a stripped string."""
+        return str(value).strip() if value else ""
+
+    @staticmethod
+    def _bs_attr(tag: object, attr: str) -> str | None:
+        """Safely extract a string attribute from a BeautifulSoup tag."""
+        if tag is None:
+            return None
+        val = getattr(tag, "get", lambda x: None)(attr)
+        if val is None:
+            return None
+        return str(val).strip() or None
 
     def build_page_url(self, base_url: str, page: int) -> str:
         """Build a paginated URL. Override for sources with non-standard pagination."""

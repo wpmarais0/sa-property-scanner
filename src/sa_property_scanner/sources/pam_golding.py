@@ -21,7 +21,7 @@ class PamGoldingSource(SourceAdapter):
         """Fetch search result page HTML."""
         return self._http_get(url)
 
-    def parse(self, html: str) -> list[RawListing]:
+    def parse(self, html: str) -> list[RawListing]:  # type: ignore[override]
         """Parse listing cards from HTML into RawListing objects."""
         soup = BeautifulSoup(html, "html.parser")
         listings: list[RawListing] = []
@@ -32,8 +32,8 @@ class PamGoldingSource(SourceAdapter):
         for card in cards:
             try:
                 link_tag = card.select_one("h3.results__item-heading a.results__item-heading-link")
-                href = link_tag.get("href") if link_tag else None
-                title = link_tag.get_text(strip=True) if link_tag else None
+                href = str(link_tag.get("href")) if link_tag else None
+                title = str(link_tag.get_text(strip=True)) if link_tag else None
                 url_abs = self._make_absolute_url(self.search_url, href)
 
                 # Derive external_id from href slug, e.g. /property-details/.../bed1750466
