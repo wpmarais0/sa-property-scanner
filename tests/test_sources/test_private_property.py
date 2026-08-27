@@ -1,9 +1,7 @@
 """Tests for the Private Property source adapter."""
 
-import pytest
 
 from sa_property_scanner.sources.private_property import PrivatePropertySource
-
 
 SAMPLE_HTML = """
 <!DOCTYPE html>

@@ -3,9 +3,9 @@
 import pytest
 from sqlalchemy import select
 
-from sa_property_scanner.models import Listing, PriceHistory, ScanLog
-from sa_property_scanner.scraper import ScraperOrchestrator
+from sa_property_scanner.models import Listing, PriceHistory
 from sa_property_scanner.schemas import RawListing
+from sa_property_scanner.scraper import ScraperOrchestrator
 
 
 @pytest.mark.asyncio

@@ -1,9 +1,7 @@
 """Tests for the Sotheby's source adapter."""
 
-import pytest
 
 from sa_property_scanner.sources.sothebys import SothebysSource
-
 
 SAMPLE_HTML = """
 <!DOCTYPE html>

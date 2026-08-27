@@ -1,5 +1,6 @@
 """Playwright stealth mixin for dynamic scraping targets."""
 
+import contextlib
 import json
 from typing import Any
 
@@ -57,10 +58,8 @@ class PlaywrightMixin:
             nonlocal intercepted_data
             response = await route.fetch()
             body = await response.text()
-            try:
+            with contextlib.suppress(json.JSONDecodeError):
                 intercepted_data = json.loads(body)
-            except json.JSONDecodeError:
-                pass
             await route.fulfill(response=response)
 
         await page.route(url_pattern, handle_route)

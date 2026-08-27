@@ -1,9 +1,7 @@
 """Tests for the Seeff source adapter."""
 
-import pytest
 
 from sa_property_scanner.sources.seeff import SeeffSource
-
 
 SAMPLE_HTML = """
 <!DOCTYPE html>

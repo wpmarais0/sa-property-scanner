@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sa_property_scanner.config import settings
@@ -10,7 +10,7 @@ from sa_property_scanner.database import AsyncSessionLocal
 from sa_property_scanner.logger import get_logger
 from sa_property_scanner.models import Listing, PriceHistory, ScanLog
 from sa_property_scanner.notifications import get_notifiers
-from sa_property_scanner.schemas import NotificationPayload, RawListing, ListingRead
+from sa_property_scanner.schemas import ListingRead, NotificationPayload, RawListing
 from sa_property_scanner.sources import get_enabled_sources
 
 logger = get_logger(__name__)
@@ -21,6 +21,7 @@ class ScraperOrchestrator:
 
     def __init__(self) -> None:
         self.notifiers = get_notifiers()
+        self._notified_ids: set[str] = set()
 
     def _detect_amenities(self, raw: RawListing) -> list[str]:
         """Detect soft amenity mentions in title/description."""
@@ -39,44 +40,33 @@ class ScraperOrchestrator:
     def _passes_filter(self, raw: RawListing) -> bool:
         """Check if a listing matches the configured filter criteria."""
         # Price filter
-        if settings.min_price is not None and raw.price is not None:
-            if raw.price < settings.min_price:
-                return False
-        if settings.max_price is not None and raw.price is not None:
-            if raw.price > settings.max_price:
-                return False
+        if settings.min_price is not None and raw.price is not None and raw.price < settings.min_price:
+            return False
+        if settings.max_price is not None and raw.price is not None and raw.price > settings.max_price:
+            return False
 
         # Bedroom filter
-        if settings.bedrooms_min is not None and raw.bedrooms is not None:
-            if raw.bedrooms < settings.bedrooms_min:
-                return False
-        if settings.bedrooms_max is not None and raw.bedrooms is not None:
-            if raw.bedrooms > settings.bedrooms_max:
-                return False
+        if settings.bedrooms_min is not None and raw.bedrooms is not None and raw.bedrooms < settings.bedrooms_min:
+            return False
+        if settings.bedrooms_max is not None and raw.bedrooms is not None and raw.bedrooms > settings.bedrooms_max:
+            return False
 
         # Bathroom filter
-        if settings.bathrooms_min is not None and raw.bathrooms is not None:
-            if raw.bathrooms < settings.bathrooms_min:
-                return False
-        if settings.bathrooms_max is not None and raw.bathrooms is not None:
-            if raw.bathrooms > settings.bathrooms_max:
-                return False
+        if settings.bathrooms_min is not None and raw.bathrooms is not None and raw.bathrooms < settings.bathrooms_min:
+            return False
+        if settings.bathrooms_max is not None and raw.bathrooms is not None and raw.bathrooms > settings.bathrooms_max:
+            return False
 
         # Garage filter
-        if settings.garage_min is not None and raw.garages is not None:
-            if raw.garages < settings.garage_min:
-                return False
+        if settings.garage_min is not None and raw.garages is not None and raw.garages < settings.garage_min:
+            return False
 
         # Property type filter
-        if settings.property_types is not None and raw.property_type is not None:
-            if raw.property_type.lower() not in settings.property_types:
-                return False
-
-        # Note: pet_friendly, own_yard, and fibre_internet are amenities
-        # that are rarely exposed in listing card HTML. They are preserved
-        # here as configuration but cannot be reliably filtered at scrape time.
-        # Users should set these in the portal's advanced search URL where possible.
-        return True
+        return not (
+            settings.property_types is not None
+            and raw.property_type is not None
+            and raw.property_type.lower() not in settings.property_types
+        )
 
     async def run(self) -> None:
         """Execute a complete scan across all enabled sources."""
@@ -225,6 +215,11 @@ class ScraperOrchestrator:
         """Dispatch notifications to all configured channels."""
         if not self.notifiers:
             return
+        dedup_key = f"{event_type}:{source_name}:{raw.external_id}"
+        if dedup_key in self._notified_ids:
+            logger.debug("Skipping duplicate notification for %s", dedup_key)
+            return
+        self._notified_ids.add(dedup_key)
         result = await session.execute(
             select(Listing).where(
                 and_(Listing.source == source_name, Listing.external_id == raw.external_id)

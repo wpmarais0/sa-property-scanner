@@ -1,9 +1,17 @@
 """SQLAlchemy ORM models."""
 
 from datetime import datetime
-from typing import List
 
-from sqlalchemy import ForeignKey, Integer, String, Float, DateTime, Text, Boolean, func, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sa_property_scanner.database import Base
@@ -36,7 +44,7 @@ class Listing(Base):
         DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-    price_history: Mapped[List["PriceHistory"]] = relationship(
+    price_history: Mapped[list["PriceHistory"]] = relationship(
         "PriceHistory", back_populates="listing", cascade="all, delete-orphan"
     )
 

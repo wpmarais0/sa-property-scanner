@@ -53,7 +53,10 @@ class SothebysSource(SourceAdapter):
                 # Extract property type from title if present
                 property_type = None
                 if title:
-                    type_keywords = ["house", "apartment", "townhouse", "villa", "plot", "land", "farm", "freehold", "duplex", "penthouse"]
+                    type_keywords = [
+                        "house", "apartment", "townhouse", "villa", "plot",
+                        "land", "farm", "freehold", "duplex", "penthouse",
+                    ]
                     title_lower = title.lower()
                     for kw in type_keywords:
                         if kw in title_lower:
@@ -62,7 +65,6 @@ class SothebysSource(SourceAdapter):
 
                 # Extract features from text nodes
                 bedrooms = bathrooms = garage = size_sqm = None
-                exclusive_mandate = False
                 for text_node in card.find_all(string=True):
                     text = str(text_node).strip()
                     if not text:
@@ -82,7 +84,7 @@ class SothebysSource(SourceAdapter):
                         digits = "".join(ch for ch in text if ch.isdigit() and ch != "\u00b2")
                         size_sqm = int(digits) if digits else None
                     elif "exclusive mandate" in text_lower:
-                        exclusive_mandate = True
+                        pass
 
                 img_tag = card.select_one("img")
                 image_url = None

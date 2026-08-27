@@ -1,7 +1,5 @@
 """Source adapter registry."""
 
-from typing import Type
-
 from sa_property_scanner.config import settings
 from sa_property_scanner.logger import get_logger
 
@@ -14,7 +12,7 @@ from .sothebys import SothebysSource
 
 logger = get_logger(__name__)
 
-REGISTRY: dict[str, Type[SourceAdapter]] = {
+REGISTRY: dict[str, type[SourceAdapter]] = {
     Property24Source.name: Property24Source,
     PrivatePropertySource.name: PrivatePropertySource,
     PamGoldingSource.name: PamGoldingSource,

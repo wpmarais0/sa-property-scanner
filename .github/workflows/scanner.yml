@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
+      - name: Install Playwright browsers
+        run: poetry run playwright install chromium
+
       - name: Run migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -76,7 +76,7 @@ class PrivatePropertySource(SourceAdapter):
             image_url = photos[0].get("contentUrl") if isinstance(photos[0], dict) else None
 
         # Features from additionalProperty
-        bedrooms = bathrooms = garage = size_sqm = None
+        bedrooms = bathrooms = size_sqm = None
         for prop in data.get("additionalProperty", []):
             if not isinstance(prop, dict):
                 continue
@@ -88,7 +88,7 @@ class PrivatePropertySource(SourceAdapter):
                 elif name == "bathrooms":
                     bathrooms = int(float(value)) if value else None
                 elif name == "garages":
-                    garage = int(float(value)) if value else None
+                    int(float(value)) if value else None
             except (ValueError, TypeError):
                 continue
 

@@ -2,7 +2,6 @@
 
 import logging
 import sys
-from typing import Any
 
 from pythonjsonlogger import jsonlogger
 
@@ -47,5 +46,6 @@ def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
 
         handler.setFormatter(fmt)
         logger.addHandler(handler)
+        logger.propagate = False
 
     return logger

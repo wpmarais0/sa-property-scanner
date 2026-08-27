@@ -1,9 +1,7 @@
 """Tests for the Pam Golding source adapter."""
 
-import pytest
 
 from sa_property_scanner.sources.pam_golding import PamGoldingSource
-
 
 SAMPLE_HTML = """
 <!DOCTYPE html>

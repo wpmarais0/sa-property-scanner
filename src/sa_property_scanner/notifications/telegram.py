@@ -54,7 +54,7 @@ class TelegramNotifier(Notifier):
 
         lines = [
             f"{event_emoji} *{listing.title or 'Property Alert'}*",
-            f"",
+            "",
             f"💰 Price: {listing.price_text or (f'R {listing.price:,.0f}' if listing.price else 'Price on request')}",
         ]
 
@@ -78,7 +78,7 @@ class TelegramNotifier(Notifier):
             for note in payload.amenity_notes:
                 lines.append(f"• {note}")
 
-        lines.append(f"")
+        lines.append("")
         lines.append(f"_Source: {listing.source}_")
 
         return "\n".join(lines)
