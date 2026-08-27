@@ -43,7 +43,7 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Ensure setuptools is available
-        run: poetry run pip install setuptools
+        run: poetry run pip install "setuptools<70"
 
       - name: Lint with Ruff
         run: |
