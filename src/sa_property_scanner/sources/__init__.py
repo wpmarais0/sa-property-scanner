@@ -4,9 +4,12 @@ from sa_property_scanner.config import settings
 from sa_property_scanner.logger import get_logger
 
 from .base import SourceAdapter
+from .harcourts import HarcourtsSource
+from .just_property import JustPropertySource
 from .pam_golding import PamGoldingSource
 from .private_property import PrivatePropertySource
 from .property24 import Property24Source
+from .rawson import RawsonSource
 from .seeff import SeeffSource
 from .sothebys import SothebysSource
 
@@ -18,6 +21,9 @@ REGISTRY: dict[str, type[SourceAdapter]] = {
     PamGoldingSource.name: PamGoldingSource,
     SeeffSource.name: SeeffSource,
     SothebysSource.name: SothebysSource,
+    JustPropertySource.name: JustPropertySource,
+    HarcourtsSource.name: HarcourtsSource,
+    RawsonSource.name: RawsonSource,
 }
 
 

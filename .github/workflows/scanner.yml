@@ -63,6 +63,12 @@ jobs:
           SEEFF_SEARCH_URL: ${{ vars.SEEFF_SEARCH_URL }}
           SOTHEBYS_ENABLED: ${{ vars.SOTHEBYS_ENABLED }}
           SOTHEBYS_SEARCH_URL: ${{ vars.SOTHEBYS_SEARCH_URL }}
+          JUST_PROPERTY_ENABLED: ${{ vars.JUST_PROPERTY_ENABLED }}
+          JUST_PROPERTY_SEARCH_URL: ${{ vars.JUST_PROPERTY_SEARCH_URL }}
+          HARCOURTS_ENABLED: ${{ vars.HARCOURTS_ENABLED }}
+          HARCOURTS_SEARCH_URL: ${{ vars.HARCOURTS_SEARCH_URL }}
+          RAWSON_ENABLED: ${{ vars.RAWSON_ENABLED }}
+          RAWSON_SEARCH_URL: ${{ vars.RAWSON_SEARCH_URL }}
           MIN_PRICE: ${{ vars.MIN_PRICE }}
           MAX_PRICE: ${{ vars.MAX_PRICE }}
           BEDROOMS_MIN: ${{ vars.BEDROOMS_MIN }}

@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     sothebys_enabled: bool = Field(default=True)
     sothebys_search_url: str | None = Field(default=None)
 
+    just_property_enabled: bool = Field(default=True)
+    just_property_search_url: str | None = Field(default=None)
+
+    harcourts_enabled: bool = Field(default=True)
+    harcourts_search_url: str | None = Field(default=None)
+
+    rawson_enabled: bool = Field(default=True)
+    rawson_search_url: str | None = Field(default=None)
+
     # Filtering
     min_price: int | None = Field(default=None)
     max_price: int | None = Field(default=None)
@@ -79,6 +88,9 @@ class Settings(BaseSettings):
             "pam_golding": self.pam_golding_enabled,
             "seeff": self.seeff_enabled,
             "sothebys": self.sothebys_enabled,
+            "just_property": self.just_property_enabled,
+            "harcourts": self.harcourts_enabled,
+            "rawson": self.rawson_enabled,
         }
         return mapping.get(name, False)
 
@@ -90,6 +102,9 @@ class Settings(BaseSettings):
             "pam_golding": self.pam_golding_search_url,
             "seeff": self.seeff_search_url,
             "sothebys": self.sothebys_search_url,
+            "just_property": self.just_property_search_url,
+            "harcourts": self.harcourts_search_url,
+            "rawson": self.rawson_search_url,
         }
         return mapping.get(name)
 
