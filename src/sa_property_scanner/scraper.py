@@ -85,7 +85,11 @@ class ScraperOrchestrator:
 
         async with AsyncSessionLocal() as session:
             for source in sources:
-                await self._process_source(session, source)
+                try:
+                    await self._process_source(session, source)
+                except Exception:
+                    logger.exception("Unexpected error processing source %s", source.name)
+                    continue
             await session.commit()
 
     async def _process_source(self, session: AsyncSession, source: SourceAdapter) -> None:

@@ -8,6 +8,7 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -26,8 +27,19 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
+      - name: Ensure setuptools is available
+        run: poetry run pip install "setuptools<70"
+
       - name: Install Playwright browsers
         run: poetry run playwright install chromium
+
+      - name: Restore database cache
+        uses: actions/cache@v4
+        with:
+          path: properties.db
+          key: property-db-${{ github.run_id }}
+          restore-keys: |
+            property-db-
 
       - name: Run migrations
         env:
@@ -35,6 +47,7 @@ jobs:
         run: poetry run alembic upgrade head
 
       - name: Run scanner
+        id: scan
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -62,5 +75,32 @@ jobs:
           FIBRE_INTERNET: ${{ vars.FIBRE_INTERNET }}
           PROPERTY_TYPES: ${{ vars.PROPERTY_TYPES }}
           PAGINATION_MAX_PAGES: ${{ vars.PAGINATION_MAX_PAGES }}
+          WESTERN_CAPE_ONLY: ${{ vars.WESTERN_CAPE_ONLY }}
           HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
-        run: poetry run property-scanner scan
+        run: poetry run property-scanner scan 2>&1 | tee scanner.log
+
+      - name: Upload scanner logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-logs-${{ github.run_id }}
+          path: scanner.log
+          retention-days: 7
+
+      - name: Healthcheck success
+        if: success()
+        env:
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+        run: |
+          if [ -n "$HEALTHCHECKS_URL" ]; then
+            curl -fsS -m 10 --retry 5 "$HEALTHCHECKS_URL" || true
+          fi
+
+      - name: Healthcheck fail
+        if: failure()
+        env:
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+        run: |
+          if [ -n "$HEALTHCHECKS_URL" ]; then
+            curl -fsS -m 10 --retry 5 "${HEALTHCHECKS_URL}/fail" || true
+          fi
