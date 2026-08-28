@@ -5,7 +5,7 @@ import json
 from typing import Any
 
 from playwright.async_api import BrowserContext, Page, Request, Route, async_playwright
-from playwright_stealth import stealth
+from playwright_stealth import Stealth
 
 from sa_property_scanner.config import settings
 from sa_property_scanner.logger import get_logger
@@ -45,7 +45,8 @@ class PlaywrightMixin:
     async def _stealth_page(self, context: BrowserContext) -> Page:
         """Create a new page and apply stealth patches."""
         page = await context.new_page()
-        await stealth(page)
+        stealth = Stealth()
+        await stealth.apply_stealth_async(page)
         return page
 
     async def _intercept_api_response(self, page: Page, url_pattern: str) -> dict[str, Any] | None:

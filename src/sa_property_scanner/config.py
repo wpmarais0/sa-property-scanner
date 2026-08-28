@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     discord_webhook_url: str | None = Field(default=None)
 
     # Source toggles & URLs
-    property24_enabled: bool = Field(default=False)
+    property24_enabled: bool = Field(default=True)
     property24_search_url: str | None = Field(default=None)
 
     private_property_enabled: bool = Field(default=False)

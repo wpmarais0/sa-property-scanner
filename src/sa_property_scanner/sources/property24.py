@@ -136,8 +136,16 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
                 bedrooms = bathrooms = None
                 for feat in tile.select(".p24_featureDetails"):
                     feat_title = str(feat.get("title", "")).lower()
+                    if "bedroom" not in feat_title and "bathroom" not in feat_title:
+                        continue
                     count_span = feat.select_one("span")
-                    count = int(count_span.get_text(strip=True)) if count_span else None
+                    if not count_span:
+                        continue
+                    count_text = count_span.get_text(strip=True)
+                    try:
+                        count = int(float(count_text))
+                    except ValueError:
+                        continue
                     if "bedroom" in feat_title:
                         bedrooms = count
                     elif "bathroom" in feat_title:
