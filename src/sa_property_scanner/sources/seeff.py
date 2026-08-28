@@ -4,6 +4,8 @@ Seeff uses a custom property platform with clear CSS classes.
 We use static scraping on the server-rendered HTML.
 """
 
+import re
+
 from bs4 import BeautifulSoup
 
 from sa_property_scanner.schemas import RawListing
@@ -57,15 +59,18 @@ class SeeffSource(SourceAdapter):
                     text = str(el).strip()
                     if not text:
                         continue
-                    if bedrooms is None and "bed" in text.lower():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bedrooms = int(digits) if digits else None
-                    elif bathrooms is None and "bath" in text.lower():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bathrooms = int(digits) if digits else None
-                    elif garages is None and "garage" in text.lower():
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        garages = int(digits) if digits else None
+                    text_lower = text.lower()
+                    # Only match the keyword at word boundaries to avoid partial matches
+                    if bedrooms is None and "bed" in text_lower:
+                        # Extract only the digit immediately before "bed"
+                        match = re.search(r"(\d+)\s*bed", text_lower)
+                        bedrooms = int(match.group(1)) if match else None
+                    elif bathrooms is None and "bath" in text_lower:
+                        match = re.search(r"(\d+)\s*bath", text_lower)
+                        bathrooms = int(match.group(1)) if match else None
+                    elif garages is None and "garage" in text_lower:
+                        match = re.search(r"(\d+)\s*garage", text_lower)
+                        garages = int(match.group(1)) if match else None
 
                 img_tag = card.select_one(".card-img img")
                 image_url = None
