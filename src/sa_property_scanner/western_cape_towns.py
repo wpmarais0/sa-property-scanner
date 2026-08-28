@@ -3,6 +3,8 @@
 Used for location-based filtering to ensure only Western Cape properties are returned.
 """
 
+import re
+
 # Major towns and localities across all Western Cape regions
 WESTERN_CAPE_TOWNS: set[str] = {
     # Cape Town Metro
@@ -43,7 +45,6 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "tokai",
     # Cape Town Metro - missing suburbs
     "athlone",
-    "belhar",
     "blue downs",
     "bonteheuwel",
     "cape flats",
@@ -55,11 +56,8 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "heideveld",
     "kalksteenfontein",
     "kuils river",
-    "lansdowne",
-    "lentegeur",
     "macassar",
     "manenberg",
-    "mitchells plain",
     "mfuleni",
     "montana",
     "nyanga",
@@ -141,14 +139,10 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "mcgregor",
     "montagu",
     "rawsonville",
-    "robertson",
     "touws river",
     "worcester",
     # Cape Agulhas
-    "bredasdorp",
     "l'agulhas",
-    "napier",
-    "struisbaai",
     "suiderstrand",
     # Hessequa
     "albertinia",
@@ -164,13 +158,10 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "vanwyksdorp",
     # Other
     "dysselsdorp",
-    "herolds bay",
     "keurboomstrand",
     "natures valley",
     "noordhoek",
     "onrus",
-    "plettenberg bay",
-    "sedgefield",
     "witsand",
 }
 
@@ -217,9 +208,4 @@ def is_western_cape_location(location: str | None) -> bool:
 
     # Check for common Western Cape postal code prefixes (8000-8099 for Cape Town metro)
     # This is a heuristic and may not be present in all listings
-    import re
-
-    if re.search(r"\b8[0-1]\d{3}\b", location):
-        return True
-
-    return False
+    return bool(re.search(r"\b8[0-1]\d{3}\b", location))
