@@ -152,7 +152,11 @@ class Property24Source(SourceAdapter, PlaywrightMixin):
                         bathrooms = count
 
                 img_tag = tile.select_one("img.js_P24_listingImage")
-                image_url = str(img_tag.get("src")) if img_tag else None
+                image_url = None
+                if img_tag:
+                    src = img_tag.get("src")
+                    if src:
+                        image_url = str(src).strip() or None
 
                 listings.append(
                     RawListing(

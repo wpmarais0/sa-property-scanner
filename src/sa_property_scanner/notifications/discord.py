@@ -1,5 +1,7 @@
 """Discord webhook notifier with rich embeds."""
 
+import json
+
 from discord_webhook import AsyncDiscordWebhook, DiscordEmbed
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
@@ -38,13 +40,23 @@ class DiscordNotifier(Notifier):
         }
         color = color_map.get(payload.event_type, "0099ff")  # Default blue
 
+        # Build description safely
+        description = None
+        if listing.url and listing.location:
+            description = f"[{listing.location}]({listing.url})"
+        elif listing.url:
+            description = f"[View Listing]({listing.url})"
+        elif listing.title:
+            description = listing.title
+
         # Build the embed
         embed = DiscordEmbed(
             title=listing.title or "Property Alert",
-            description=f"[{listing.location or 'View Location'}]({listing.url})",
+            description=description,
             color=color,
-            url=listing.url,
         )
+        if listing.url:
+            embed.set_url(listing.url)
 
         # Add image if available
         if listing.image_url:
@@ -102,9 +114,22 @@ class DiscordNotifier(Notifier):
             webhook = AsyncDiscordWebhook(url=self.webhook_url)
             webhook.add_embed(embed)
             webhook.set_content(event_label)
-            await webhook.execute()
-            logger.info("Discord alert sent for %s", listing.external_id)
-            return True
+            response = await webhook.execute()
+            if response.status_code in (200, 204):
+                logger.info("Discord alert sent for %s", listing.external_id)
+                return True
+            logger.error(
+                "Discord webhook returned %s for %s: %s",
+                response.status_code,
+                listing.external_id,
+                response.content.decode("utf-8"),
+            )
+            logger.debug(
+                "Discord embed payload for %s: %s",
+                listing.external_id,
+                json.dumps(embed.__dict__, default=str),
+            )
+            return False
         except Exception as exc:  # noqa: BLE001
             logger.error("Discord send failed: %s", exc)
             return False
