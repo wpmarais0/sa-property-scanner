@@ -13,7 +13,7 @@ requests = "^2.31.0"
 httpx = { extras = ["http2"], version = "^0.27.0" }
 beautifulsoup4 = "^4.12.3"
 playwright = "^1.42.0"
-playwright-stealth = "^1.0.6"
+playwright-stealth = "^2.0.0"
 feedparser = "^6.0.11"
 # Database
 sqlalchemy = { extras = ["asyncio"], version = "^2.0.29" }
