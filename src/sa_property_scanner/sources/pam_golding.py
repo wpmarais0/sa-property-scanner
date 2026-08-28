@@ -33,6 +33,8 @@ class PamGoldingSource(SourceAdapter):
             try:
                 link_tag = card.select_one("h3.results__item-heading a.results__item-heading-link")
                 href = str(link_tag.get("href")) if link_tag else None
+                if not href:
+                    continue
                 title = str(link_tag.get_text(strip=True)) if link_tag else None
                 url_abs = self._make_absolute_url(self.search_url, href)
 

@@ -1,5 +1,7 @@
 # SA Property Scanner
 
+![CI](https://github.com/wpmarais0/sa-property-scanner/actions/workflows/ci.yml/badge.svg)
+
 Autonomous property scanner for South African real estate, targeting the **Western Cape / Garden Route** market. Monitors major portals and agency sites, filters by your criteria, and pushes instant alerts to Telegram or Discord.
 
 ---
@@ -13,7 +15,7 @@ Autonomous property scanner for South African real estate, targeting the **Weste
 │  ├── Private Property  (Playwright + API intercept)         │
 │  ├── Pam Golding       (Static HTML scraping)               │
 │  ├── Seeff             (Static HTML scraping)               │
-│  └── Lew Geffen        (Static HTML scraping)               │
+│  └── Sotheby's         (Static HTML scraping)               │
 └────────────────────────┬────────────────────────────────────┘
                          ▼
               ┌─────────────────────┐
