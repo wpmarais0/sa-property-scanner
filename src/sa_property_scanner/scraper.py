@@ -40,6 +40,13 @@ class ScraperOrchestrator:
 
     def _passes_filter(self, raw: RawListing) -> bool:
         """Check if a listing matches the configured filter criteria."""
+        # Location filter - Western Cape only
+        if settings.western_cape_only:
+            from sa_property_scanner.western_cape_towns import is_western_cape_location
+
+            if not is_western_cape_location(raw.location):
+                return False
+
         # Price filter
         if settings.min_price is not None and raw.price is not None and raw.price < settings.min_price:
             return False

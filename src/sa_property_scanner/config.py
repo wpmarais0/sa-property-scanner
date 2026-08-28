@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     own_yard: bool = Field(default=False)
     fibre_internet: bool = Field(default=False)
     property_types: list[str] | None = Field(default=None)
+    western_cape_only: bool = Field(default=True)
 
     # Pagination
     pagination_max_pages: int = Field(default=1)

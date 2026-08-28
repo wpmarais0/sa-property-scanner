@@ -1,0 +1,93 @@
+"""Tests for Western Cape location filtering."""
+
+import pytest
+
+from sa_property_scanner.western_cape_towns import is_western_cape_location
+
+
+@pytest.mark.parametrize(
+    "location,expected",
+    [
+        # Known Western Cape towns
+        ("House for sale in Stellenbosch", True),
+        ("Apartment in Cape Town", True),
+        ("Villa in Hermanus", True),
+        ("Plot in Plettenberg Bay", True),
+        ("Farm in Worcester", True),
+        ("Townhouse in George", True),
+        ("House in Knysna", True),
+        ("Erf in Mossel Bay", True),
+        ("Apartment in Somerset West", True),
+        ("House in Franschhoek", True),
+        ("Villa in Langebaan", True),
+        ("House in Saldanha", True),
+        ("Farm in Beaufort West", True),
+        ("House in Oudtshoorn", True),
+        ("Apartment in Swellendam", True),
+        ("House in Tulbagh", True),
+        ("Villa in Wilderness", True),
+        ("House in Bredasdorp", True),
+        ("Apartment in Caledon", True),
+        ("House in Robertson", True),
+        ("Erf in Greyton", True),
+        ("House in Stanford", True),
+        ("Villa in Pringle Bay", True),
+        ("House in Velddrif", True),
+        ("Apartment in Vredenburg", True),
+        ("House in Yzerfontein", True),
+        ("Farm in Ceres", True),
+        ("House in Montagu", True),
+        ("Villa in McGregor", True),
+        ("Apartment in Ashton", True),
+        ("House in Ladismith", True),
+        ("Erf in Riversdale", True),
+        ("House in Heidelberg", True),
+        ("Villa in Still Bay", True),
+        ("Apartment in Albertinia", True),
+        ("House in Calitzdorp", True),
+        ("Farm in Vanwyksdorp", True),
+        ("House in Prince Albert", True),
+        ("Villa in Laingsburg", True),
+        ("Apartment in Matjiesfontein", True),
+        ("House in Clanwilliam", True),
+        ("Erf in Citrusdal", True),
+        ("Villa in Lamberts Bay", True),
+        ("House in Piketberg", True),
+        ("Apartment in Malmesbury", True),
+        ("House in Moorreesburg", True),
+        ("Villa in Darling", True),
+        ("Erf in Aurora", True),
+        # Western Cape identifiers
+        ("Western Cape property", True),
+        ("House in the Winelands", True),
+        ("Apartment on the Garden Route", True),
+        ("Farm in the Karoo", True),
+        ("Villa on the West Coast", True),
+        ("House in Overberg", True),
+        # Other provinces (should be filtered out)
+        ("House in Johannesburg", False),
+        ("Apartment in Pretoria", False),
+        ("Villa in Durban", False),
+        ("House in Pietermaritzburg", False),
+        ("Farm in Bloemfontein", False),
+        ("Erf in Kimberley", False),
+        ("House in Nelspruit", False),
+        ("Apartment in Polokwane", False),
+        ("Villa in Rustenburg", False),
+        ("House in East London", False),
+        ("Farm in Port Elizabeth", False),
+        ("Erf in Gqeberha", False),
+        ("House in Umhlanga", False),
+        ("Apartment in Ballito", False),
+        ("Villa in Centurion", False),
+        ("House in Sandton", False),
+        ("Farm in Midrand", False),
+        ("Erf in Randburg", False),
+        # Edge cases
+        (None, True),  # Allow listings without location (conservative)
+        ("", True),
+        ("Some generic location", False),
+    ],
+)
+def test_is_western_cape_location(location: str | None, expected: bool) -> None:
+    assert is_western_cape_location(location) is expected
