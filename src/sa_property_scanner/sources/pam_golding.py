@@ -4,6 +4,8 @@ Pam Golding's site is a Nuxt/Vue SPA. We use static scraping on the
 server-rendered HTML which contains the listing grid.
 """
 
+import re
+
 from bs4 import BeautifulSoup
 
 from sa_property_scanner.schemas import RawListing
@@ -53,14 +55,14 @@ class PamGoldingSource(SourceAdapter):
                 for item in card.select(".results__item-body-item"):
                     text = item.get_text(strip=True).lower()
                     if "bed" in text:
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bedrooms = int(digits) if digits else None
+                        match = re.search(r"(\d+)\s*bed", text)
+                        bedrooms = int(match.group(1)) if match else None
                     elif "bath" in text:
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        bathrooms = int(digits) if digits else None
+                        match = re.search(r"(\d+)\s*bath", text)
+                        bathrooms = int(match.group(1)) if match else None
                     elif "garage" in text:
-                        digits = "".join(ch for ch in text if ch.isdigit())
-                        garages = int(digits) if digits else None
+                        match = re.search(r"(\d+)\s*garage", text)
+                        garages = int(match.group(1)) if match else None
 
                 # Location is usually in the title, e.g. "Apartment for sale in Gresswold"
                 location = None
