@@ -15,7 +15,10 @@ Autonomous property scanner for South African real estate, targeting the **Weste
 │  ├── Private Property  (Playwright + API intercept)         │
 │  ├── Pam Golding       (Static HTML scraping)               │
 │  ├── Seeff             (Static HTML scraping)               │
-│  └── Sotheby's         (Static HTML scraping)               │
+│  ├── Sotheby's         (Static HTML scraping)               │
+│  ├── Just Property     (Static HTML scraping)               │
+│  ├── Harcourts         (Static HTML scraping)               │
+│  └── Rawson            (Static HTML scraping)               │
 └────────────────────────┬────────────────────────────────────┘
                          ▼
               ┌─────────────────────┐
@@ -102,7 +105,27 @@ Add to your crontab (`crontab -e`):
 
 ### GitHub Actions (Free tier)
 
-The included `.github/workflows/scanner.yml` runs on a cron schedule. **Note:** Property24 and Private Property may block GitHub's Azure IP ranges. Agency-only mode is more reliable here.
+The included `.github/workflows/scanner.yml` runs on a cron schedule every 30 minutes.
+
+1. Make sure your local `.env` has the values you want to use.
+2. Push your `.env` values to GitHub secrets/variables:
+
+   ```bash
+   # Review what will be uploaded
+   scripts/export-github-env.sh
+
+   # Actually upload (requires the GitHub CLI and repo write access)
+   scripts/export-github-env.sh --apply
+   ```
+
+   Sensitive values (`DISCORD_WEBHOOK_URL`, `TELEGRAM_BOT_TOKEN`, etc.) are stored as **encrypted secrets**. Source URLs, filters, and enabled flags are stored as **repository variables**.
+
+3. Trigger the workflow manually from the Actions tab to verify it works.
+
+**Notes:**
+- Property24 and Private Property may block GitHub's Azure IP ranges. Agency-only mode (Pam Golding, Seeff, Sotheby's, Just Property, Harcourts, Rawson) is more reliable here.
+- The workflow caches `properties.db` between runs so only new/updated listings trigger notifications.
+- If you want to use PostgreSQL instead of SQLite, set `DATABASE_URL` to a connection string (e.g. from a managed Postgres provider).
 
 ---
 
