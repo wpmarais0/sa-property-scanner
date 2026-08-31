@@ -14,6 +14,7 @@ from sa_property_scanner.health import send_heartbeat, send_heartbeat_sync
 # database.py
 # ---------------------------------------------------------------------------
 
+
 def test_make_async_url_sqlite():
     """SQLite URL should be converted to async aiosqlite driver."""
     assert make_async_url("sqlite:///./properties.db") == "sqlite+aiosqlite:///./properties.db"
@@ -74,6 +75,7 @@ async def test_get_session():
 # health.py
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_send_heartbeat_skips_when_no_url():
     """No URL configured → heartbeat should be a no-op."""
@@ -116,11 +118,14 @@ def test_send_heartbeat_sync_success():
 # cli.py
 # ---------------------------------------------------------------------------
 
+
 def test_scan_command():
     """CLI scan command should run the scraper orchestrator and send heartbeat."""
     runner = CliRunner()
-    with patch("sa_property_scanner.cli.run_scan") as mock_run_scan, \
-         patch("sa_property_scanner.cli.send_heartbeat_sync") as mock_heartbeat:
+    with (
+        patch("sa_property_scanner.cli.run_scan") as mock_run_scan,
+        patch("sa_property_scanner.cli.send_heartbeat_sync") as mock_heartbeat,
+    ):
         result = runner.invoke(main, ["scan"])
     assert result.exit_code == 0
     mock_run_scan.assert_called_once()
