@@ -79,7 +79,7 @@ class HarcourtsSource(SourceAdapter):
                 if img_tag:
                     src = img_tag.get("src")
                     if src:
-                        image_url = str(src).strip() or None
+                        image_url = self._make_absolute_url("https://www.harcourts.co.za", src)
 
                 listings.append(
                     RawListing(

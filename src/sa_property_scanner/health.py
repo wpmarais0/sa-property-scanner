@@ -1,6 +1,7 @@
 """Health monitoring via external heartbeat ping."""
 
 import httpx
+import requests
 
 from sa_property_scanner.config import settings
 from sa_property_scanner.logger import get_logger
@@ -26,8 +27,6 @@ def send_heartbeat_sync() -> None:
     if not settings.healthchecks_url:
         return
     try:
-        import requests
-
         requests.get(settings.healthchecks_url, timeout=10)
         logger.debug("Healthcheck ping sent.")
     except Exception as exc:  # noqa: BLE001

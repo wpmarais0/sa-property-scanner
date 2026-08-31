@@ -1,6 +1,7 @@
 """Command-line interface."""
 
 import asyncio
+import subprocess
 
 import click
 
@@ -30,8 +31,6 @@ def init_db_cmd() -> None:
 @main.command()
 def migrate() -> None:
     """Run Alembic database migrations."""
-    import subprocess
-
     logger.info("Running Alembic migrations...")
     subprocess.run(["alembic", "upgrade", "head"], check=True)
     logger.info("Migrations complete.")

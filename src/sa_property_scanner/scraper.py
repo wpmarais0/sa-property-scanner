@@ -1,6 +1,6 @@
 """Core scraper orchestrator."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -117,7 +117,7 @@ class ScraperOrchestrator:
             except Exception as exc:
                 log.success = False
                 log.error_message = str(exc)
-                log.finished_at = datetime.utcnow()
+                log.finished_at = datetime.now(UTC)
                 logger.exception("Source %s failed on page %d: %s", source.name, page, exc)
                 return
 
@@ -142,7 +142,7 @@ class ScraperOrchestrator:
         log.new_listings = new_count
         log.price_changes = price_change_count
         log.success = True
-        log.finished_at = datetime.utcnow()
+        log.finished_at = datetime.now(UTC)
         await session.commit()
         logger.info(
             "%s complete: %d found, %d filtered, %d new, %d price changes",
@@ -191,7 +191,7 @@ class ScraperOrchestrator:
                 )
             return True, False
 
-        existing.last_seen_at = datetime.utcnow()
+        existing.last_seen_at = datetime.now(UTC)
         existing.is_active = True
         existing.url = raw.url
         existing.title = raw.title or existing.title
