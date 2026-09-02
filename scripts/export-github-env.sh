@@ -104,7 +104,7 @@ for key in "${SECRETS[@]}"; do
         continue
     fi
     if $APPLY; then
-        printf '%s' "$value" | run_cmd gh secret set "$key" --body=-
+        run_cmd gh secret set "$key" --body="$value"
     else
         echo "gh secret set $key --body=\"$value\""
     fi
