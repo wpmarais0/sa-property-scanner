@@ -68,7 +68,8 @@ def test_sothebys_parse():
     assert first.title == "3 Bedroom House For Sale in Sandy Point"
     assert first.price == 3_650_000
     assert first.price_text == "R3,650,000"
-    assert first.location == "Sandy Point"
+    # Location is derived from the URL path for reliability.
+    assert first.location == "Sandy Point, St Helena Bay"
     assert first.bedrooms == 3
     assert first.bathrooms == 2
     assert first.property_type == "house"
@@ -82,7 +83,7 @@ def test_sothebys_parse():
     assert second.external_id == "2993410"
     assert second.title == "4 Bedroom Freehold For Sale in Constantia"
     assert second.price == 12_500_000
-    assert second.location == "Constantia"
+    assert second.location == "Constantia, Constantia"
     assert second.bedrooms == 4
     assert second.bathrooms == 4
     assert second.property_type == "freehold"
@@ -91,7 +92,7 @@ def test_sothebys_parse():
     assert third.external_id == "3423787"
     assert third.title == "3 Bedroom House For Sale in Outeniqua Strand"
     assert third.price == 1_450_000
-    assert third.location == "Outeniqua Strand"
+    assert third.location == "Outeniqua Strand, Outeniqua Strand"
     assert third.bedrooms == 3
     assert third.bathrooms == 2
     assert third.size_sqm == 250

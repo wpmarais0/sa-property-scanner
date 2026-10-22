@@ -57,6 +57,10 @@ from sa_property_scanner.western_cape_towns import is_western_cape_location
         ("House in Moorreesburg", True),
         ("Villa in Darling", True),
         ("Erf in Aurora", True),
+        # Garden Route / adjacent Eastern Cape
+        ("House in Plettenberg Bay", True),
+        ("House in Jeffreys Bay", True),
+        ("House in Jeffereys Bay", True),
         # Western Cape identifiers
         ("Western Cape property", True),
         ("House in the Winelands", True),
@@ -84,8 +88,8 @@ from sa_property_scanner.western_cape_towns import is_western_cape_location
         ("Farm in Midrand", False),
         ("Erf in Randburg", False),
         # Edge cases
-        (None, True),  # Allow listings without location (conservative)
-        ("", True),
+        (None, False),  # Listings without location are rejected
+        ("", False),
         ("Some generic location", False),
     ],
 )

@@ -66,8 +66,14 @@ class DiscordNotifier(Notifier):
         embed.set_footer(text=f"Source: {listing.source}")
         embed.set_timestamp()
 
-        # Add price field
-        price_display = listing.price_text or (f"R {listing.price:,.0f}" if listing.price else "Price on request")
+        # Add price field. Prefer the numeric price (consistently formatted)
+        # over price_text so stale or abbreviated text cannot override it.
+        if listing.price is not None:
+            price_display = f"R {listing.price:,.0f}"
+        elif listing.price_text:
+            price_display = listing.price_text
+        else:
+            price_display = "Price on request"
         embed.add_embed_field(name="💰 Price", value=price_display, inline=True)
 
         # Add bedrooms if available

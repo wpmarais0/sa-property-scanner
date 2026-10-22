@@ -122,27 +122,80 @@ class PrivatePropertySource(SourceAdapter):
         if not link:
             return None, None
 
-        # Walk up to find the card container
+        # For featured listings the anchor itself is the card; for standard
+        # listings the details live inside the anchor or its immediate card
+        # container. Search the link first so we stay inside the correct card.
         card = link.find_parent("div", class_=lambda c: c and "listing" in c.lower())
-        if not card:
-            card = link.find_parent("div")
+        search_roots = [link, card] if card else [link]
 
-        # Search within card first, then fall back to the link itself
-        search_root = card if card else link
-
-        # Price: typically in a span/div with "price" in class name
-        price_el = search_root.find(class_=lambda c: c and "price" in c.lower())
-        price_text = str(price_el.get_text(strip=True)) if price_el else None
-
-        # Title: usually near the price, e.g. "3 Bedroom House in Paarl South"
-        title_el = search_root.find(["h2", "h3", "span", "div"], class_=lambda c: c and "title" in c.lower())
-        if not title_el:
-            # Fallback: any text node that looks like a property title
-            for tag in search_root.find_all(["span", "div"]):
-                text = str(tag.get_text(strip=True))
-                if "bedroom" in text.lower() and "in" in text.lower():
-                    title_el = tag
+        # Find the first price element whose text actually parses to a number.
+        # Banners such as ``listing-banner--price-reduced`` contain the word
+        # "price" in their class but only hold the text "Reduced", so we skip
+        # them by requiring a successful numeric extraction.
+        price_text: str | None = None
+        for root in search_roots:
+            if root is None:
+                continue
+            candidates = root.find_all(class_=lambda c: c and "price" in c.lower())
+            for candidate in candidates:
+                text = str(candidate.get_text(strip=True))
+                if self._extract_price(text) is not None:
+                    price_text = text
                     break
-        title = str(title_el.get_text(strip=True)) if title_el else None
+            if price_text:
+                break
+            # If nothing parses, fall back to the first candidate so the raw
+            # label (e.g. "POA") is still captured.
+            if not price_text and candidates:
+                price_text = str(candidates[0].get_text(strip=True))
+
+        # Title: look for a heading/title element.
+        title: str | None = None
+        for root in search_roots:
+            if root is None:
+                continue
+            title_el = root.find(["h2", "h3", "span", "div"], class_=lambda c: c and "title" in c.lower())
+            if title_el:
+                # Use a space separator so titles with nested formatting such as
+                # "House in <strong>Paarl</strong>" render as "House in Paarl".
+                title = str(title_el.get_text(separator=" ", strip=True))
+                break
+            # Fallback: any text node that looks like a property title
+            for tag in root.find_all(["span", "div"]):
+                text = str(tag.get_text(separator=" ", strip=True))
+                if "bedroom" in text.lower() and " in " in text.lower():
+                    title = text
+                    break
+            if title:
+                break
 
         return price_text, title
+
+    def verify_price(self, url: str, html: str | None = None) -> int | None:
+        """Fetch the detail page and extract the displayed price.
+
+        Private Property search-result prices usually match the detail page, but
+        verifying before notification catches any listings whose price changed
+        between index caching and the scrape.
+        """
+        try:
+            if html is None:
+                html = self.fetch(url)
+            soup = BeautifulSoup(html, "html.parser")
+        except Exception as exc:
+            self.logger.warning("Failed to fetch detail page for price verification %s: %s", url, exc)
+            return None
+
+        # Primary selector used on Private Property detail pages.
+        price_el = soup.select_one(".listing-price-display__price")
+        if price_el:
+            return self._extract_price(price_el.get_text(strip=True))
+
+        # Fallback: any element whose class contains "price" and parses to a number.
+        for candidate in soup.find_all(class_=lambda c: c and "price" in c.lower()):
+            text = str(candidate.get_text(strip=True))
+            price = self._extract_price(text)
+            if price is not None:
+                return price
+
+        return None

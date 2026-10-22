@@ -52,10 +52,17 @@ class TelegramNotifier(Notifier):
             "price_increase": "📈",
         }.get(payload.event_type, "📢")
 
+        if listing.price is not None:
+            price_display = f"R {listing.price:,.0f}"
+        elif listing.price_text:
+            price_display = listing.price_text
+        else:
+            price_display = "Price on request"
+
         lines = [
             f"{event_emoji} *{listing.title or 'Property Alert'}*",
             "",
-            f"💰 Price: {listing.price_text or (f'R {listing.price:,.0f}' if listing.price else 'Price on request')}",
+            f"💰 Price: {price_display}",
         ]
 
         if listing.bedrooms:

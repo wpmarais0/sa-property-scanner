@@ -71,6 +71,10 @@ jobs:
           RAWSON_SEARCH_URL: ${{ vars.RAWSON_SEARCH_URL }}
           MIN_PRICE: ${{ vars.MIN_PRICE }}
           MAX_PRICE: ${{ vars.MAX_PRICE }}
+          VACANT_LAND_MIN_PRICE: ${{ vars.VACANT_LAND_MIN_PRICE }}
+          VACANT_LAND_MAX_PRICE: ${{ vars.VACANT_LAND_MAX_PRICE }}
+          HOUSE_MIN_PRICE: ${{ vars.HOUSE_MIN_PRICE }}
+          HOUSE_MAX_PRICE: ${{ vars.HOUSE_MAX_PRICE }}
           BEDROOMS_MIN: ${{ vars.BEDROOMS_MIN }}
           BEDROOMS_MAX: ${{ vars.BEDROOMS_MAX }}
           BATHROOMS_MIN: ${{ vars.BATHROOMS_MIN }}
@@ -82,6 +86,7 @@ jobs:
           PROPERTY_TYPES: ${{ vars.PROPERTY_TYPES }}
           PAGINATION_MAX_PAGES: ${{ vars.PAGINATION_MAX_PAGES }}
           WESTERN_CAPE_ONLY: ${{ vars.WESTERN_CAPE_ONLY }}
+          EXCLUDED_LOCATIONS: ${{ vars.EXCLUDED_LOCATIONS }}
           HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
         run: poetry run property-scanner scan 2>&1 | tee scanner.log
 

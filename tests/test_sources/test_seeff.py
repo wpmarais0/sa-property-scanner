@@ -59,7 +59,8 @@ def test_seeff_parse():
     assert first.title == "3 Bedroom House For Sale in Knysna"
     assert first.price == 3_200_000
     assert first.price_text == "R 3 200 000"
-    assert first.location == "Knysna"
+    # Location is derived from the URL path, which is more reliable than the title.
+    assert first.location == "Tulbagh, Tulbagh"
     assert first.bedrooms == 3
     assert first.bathrooms == 2
     assert first.image_url == "https://cdn.example.com/img1.jpg"
@@ -70,7 +71,7 @@ def test_seeff_parse():
     assert second.title == "14 Bedroom Lodge For Sale in Danielskuil"
     assert second.price is None  # POA cannot be parsed
     assert second.price_text == "POA"
-    assert second.location == "Danielskuil"
+    assert second.location == "Danielskuil, Danielskuil"
     assert second.bedrooms == 14
     assert second.bathrooms == 14
 

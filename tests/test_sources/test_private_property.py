@@ -111,3 +111,43 @@ def test_private_property_no_price_fallback():
     assert listings[0].bedrooms == 2
     assert listings[0].price is None
     assert listings[0].title is None
+
+
+REDUCED_HTML = """
+<!DOCTYPE html>
+<html>
+<body>
+    <a class="featured-listing" href="/for-sale/western-cape/boland/paarl/paarl-south/T4662739">
+        <div class="listing-banners listing-banners--featured listing-banners--results">
+            <div class="listing-banner listing-banner--price-reduced">Reduced</div>
+        </div>
+        <div class="featured-listing__details">
+            <div class="featured-listing__price">R 11 114 850</div>
+            <div class="featured-listing__title">4 Bedroom House in Paarl South</div>
+        </div>
+        <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "Residence",
+            "address": {"addressLocality": "Paarl South, Paarl", "addressRegion": "Western Cape"},
+            "additionalProperty": [{"name": "Bedrooms", "value": "4"}],
+            "url": "https://www.privateproperty.co.za/for-sale/western-cape/boland/paarl/paarl-south/T4662739"
+        }
+        </script>
+    </a>
+</body>
+</html>
+"""
+
+
+def test_private_property_reduced_banner_does_not_shadow_price():
+    """A 'Reduced' banner must not be picked as the price for the listing."""
+    source = PrivatePropertySource(search_url="https://www.privateproperty.co.za/houses-for-sale/western-cape/4")
+    listings = source.parse(REDUCED_HTML)
+
+    assert len(listings) == 1
+    listing = listings[0]
+    assert listing.external_id == "T4662739"
+    assert listing.price == 11_114_850
+    assert listing.price_text == "R 11 114 850"
+    assert listing.title == "4 Bedroom House in Paarl South"

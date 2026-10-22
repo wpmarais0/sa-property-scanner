@@ -26,7 +26,6 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "kraaifontein",
     "lansdowne",
     "lentegeur",
-    "mafikeng",
     "melkbosstrand",
     "mitchells plain",
     "muizenberg",
@@ -98,6 +97,8 @@ WESTERN_CAPE_TOWNS: set[str] = {
     "great brak river",
     "hartenbos",
     "herolds bay",
+    "jeffreys bay",  # Eastern Cape, but included by user request
+    "jeffereys bay",  # common misspelling
     "knysna",
     "mossel bay",
     "oudtshoorn",
@@ -192,7 +193,7 @@ def is_western_cape_location(location: str | None) -> bool:
         True if the location appears to be in the Western Cape.
     """
     if not location:
-        return True  # Allow listings without explicit location (conservative)
+        return False  # Reject listings without explicit location
 
     location_lower = location.lower()
 

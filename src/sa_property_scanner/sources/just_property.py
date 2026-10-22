@@ -69,9 +69,16 @@ class JustPropertySource(SourceAdapter):
                     if type_match:
                         property_type = type_match.group(1).lower()
 
-                # Extract location from title
+                # Extract location from title, then fall back to the URL path
+                # which uses /results/residential/for-sale/<town>/<suburb>/... .
                 location = None
-                if title and " in " in title:
+                if href:
+                    path_parts = [p for p in href.strip("/").split("/") if p]
+                    if len(path_parts) >= 5 and path_parts[0] == "results" and path_parts[2] == "for-sale":
+                        town = path_parts[3].replace("-", " ").title()
+                        suburb = path_parts[4].replace("-", " ").title()
+                        location = f"{suburb}, {town}"
+                if not location and title and " in " in title:
                     location = title.split(" in ")[-1].strip()
 
                 img_tag = card.find("img")

@@ -86,10 +86,16 @@ class RawsonSource(SourceAdapter):
                     if type_match:
                         property_type = type_match.group(1).lower()
 
-                # Extract location from title
+                # Extract location from title, then fall back to the URL path
+                # which uses /<area-name>/<listing-id>.
                 location = None
                 if title and " in " in title:
                     location = title.split(" in ")[-1].strip()
+                if not location and href:
+                    path_parts = [p for p in href.strip("/").split("/") if p]
+                    # URL structure: property/for-sale/<area-name>/<id>
+                    if len(path_parts) >= 4 and path_parts[0] == "property" and path_parts[1] == "for-sale":
+                        location = path_parts[2].replace("-", " ").title()
 
                 listings.append(
                     RawListing(

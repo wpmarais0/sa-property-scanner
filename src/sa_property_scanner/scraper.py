@@ -38,6 +38,18 @@ class ScraperOrchestrator:
 
         return notes
 
+    def _is_vacant_land(self, raw: RawListing) -> bool:
+        """Return True if the listing appears to be vacant land."""
+        if raw.property_type is not None:
+            return raw.property_type.lower() in {"vacant land", "land", "plot", "stand", "erf"}
+        # Fallback heuristic: title/description mentions land/erf/plot but not house/home
+        text = " ".join(filter(None, [raw.title, raw.description])).lower()
+        land_terms = ("vacant land", "vacant stand", "empty stand", "erf for sale", "plot for sale")
+        residential_terms = ("house", "townhouse", "apartment", "flat", "duplex")
+        has_land_term = any(term in text for term in land_terms)
+        has_residential_term = any(term in text for term in residential_terms)
+        return has_land_term and not has_residential_term
+
     def _passes_filter(self, raw: RawListing) -> bool:
         """Check if a listing matches the configured filter criteria."""
         # Location filter - Western Cape only
@@ -47,11 +59,40 @@ class ScraperOrchestrator:
             if not is_western_cape_location(raw.location):
                 return False
 
-        # Price filter
-        if settings.min_price is not None and raw.price is not None and raw.price < settings.min_price:
-            return False
-        if settings.max_price is not None and raw.price is not None and raw.price > settings.max_price:
-            return False
+        # Excluded location filter
+        if settings.excluded_locations and raw.location:
+            location_lower = raw.location.lower()
+            if any(excluded in location_lower for excluded in settings.excluded_locations):
+                return False
+
+        # Price filter - property-type-specific ranges take precedence
+        has_price_config = any(
+            [
+                settings.min_price is not None,
+                settings.max_price is not None,
+                settings.house_min_price is not None,
+                settings.house_max_price is not None,
+                settings.vacant_land_min_price is not None,
+                settings.vacant_land_max_price is not None,
+            ]
+        )
+        if has_price_config:
+            if raw.price is None:
+                # Reject POA / auction / unparseable-price listings so we never
+                # send notifications with a price we cannot verify.
+                return False
+
+            if self._is_vacant_land(raw):
+                min_p = settings.vacant_land_min_price if settings.vacant_land_min_price is not None else settings.min_price
+                max_p = settings.vacant_land_max_price if settings.vacant_land_max_price is not None else settings.max_price
+            else:
+                min_p = settings.house_min_price if settings.house_min_price is not None else settings.min_price
+                max_p = settings.house_max_price if settings.house_max_price is not None else settings.max_price
+
+            if min_p is not None and raw.price < min_p:
+                return False
+            if max_p is not None and raw.price > max_p:
+                return False
 
         # Bedroom filter
         if settings.bedrooms_min is not None and raw.bedrooms is not None and raw.bedrooms < settings.bedrooms_min:
@@ -75,6 +116,48 @@ class ScraperOrchestrator:
             and raw.property_type is not None
             and raw.property_type.lower() not in settings.property_types
         )
+
+    async def _verify_and_update_price(
+        self, session: AsyncSession, source: SourceAdapter, raw: RawListing
+    ) -> int | None:
+        """Verify a new listing's price on its detail page and update the DB.
+
+        Returns the verified price if it could be determined, otherwise ``None``.
+        The DB record is updated in place when a different price is found.
+        """
+        try:
+            if source.mode == "playwright":
+                html = await source.fetch(raw.url)  # type: ignore[misc]
+            else:
+                html = source.fetch(raw.url)
+        except Exception as exc:
+            logger.warning("Could not verify price for %s %s: %s", source.name, raw.external_id, exc)
+            return None
+
+        verified_price = source.verify_price(raw.url, html)
+        if verified_price is None or verified_price == raw.price:
+            return verified_price
+
+        # Update the just-created DB record with the verified price.
+        result = await session.execute(
+            select(Listing).where(
+                and_(Listing.source == source.name, Listing.external_id == raw.external_id)
+            )
+        )
+        listing = result.scalar_one_or_none()
+        if listing is not None:
+            listing.price = verified_price
+            listing.price_text = f"R {verified_price:,.0f}".replace(",", " ")
+            session.add(listing)
+            await session.flush()
+            logger.info(
+                "Updated %s %s price from search %s to verified %s",
+                source.name,
+                raw.external_id,
+                raw.price,
+                verified_price,
+            )
+        return verified_price
 
     async def run(self) -> None:
         """Execute a complete scan across all enabled sources."""
@@ -132,6 +215,19 @@ class ScraperOrchestrator:
                 is_new, is_price_change = await self._upsert_listing(session, source.name, raw)
                 if is_new:
                     new_count += 1
+                    verified_price = await self._verify_and_update_price(session, source, raw)
+                    if verified_price is not None and verified_price != raw.price:
+                        raw.price = verified_price
+                        raw.price_text = f"R {verified_price:,.0f}".replace(",", " ")
+                        # Re-check filters with the verified price before notifying.
+                        if not self._passes_filter(raw):
+                            filtered_count += 1
+                            logger.info(
+                                "New listing %s verified price %d is outside filters; skipping notification.",
+                                raw.external_id,
+                                verified_price,
+                            )
+                            continue
                     await self._notify("new_listing", raw, source.name, session)
                 elif is_price_change:
                     price_change_count += 1

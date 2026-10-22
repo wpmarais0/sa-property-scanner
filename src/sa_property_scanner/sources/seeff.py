@@ -48,9 +48,22 @@ class SeeffSource(SourceAdapter):
                 title_tag = card.select_one(".card-heading")
                 title = str(title_tag.get_text(strip=True)) if title_tag else None
 
-                # Location is usually in the title, e.g. "... For Sale in Tulbagh"
+                # Seeff URLs are structured like:
+                # /results/residential/for-sale/<town>/<suburb>/property-type/id/...
+                # Use the URL path for the most reliable location, then fall back
+                # to the title if needed.
                 location = None
-                if title and " in " in title:
+                if href:
+                    path_parts = [p for p in href.strip("/").split("/") if p]
+                    if len(path_parts) >= 5 and path_parts[0] == "results" and path_parts[2] == "for-sale":
+                        town = path_parts[3].replace("-", " ").title()
+                        suburb = path_parts[4].replace("-", " ").title()
+                        location = f"{suburb}, {town}"
+                    elif len(path_parts) >= 3 and path_parts[0] == "for-sale":
+                        town = path_parts[1].replace("-", " ").title()
+                        suburb = path_parts[2].replace("-", " ").title() if len(path_parts) > 3 else ""
+                        location = f"{suburb}, {town}" if suburb else town
+                if not location and title and " in " in title:
                     location = title.split(" in ", 1)[-1].strip()
 
                 # Beds / Baths / Garage are text nodes matching patterns

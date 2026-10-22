@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     # Filtering
     min_price: int | None = Field(default=None)
     max_price: int | None = Field(default=None)
+
+    # Property-type-specific price ranges (override min_price/max_price when set)
+    house_min_price: int | None = Field(default=None)
+    house_max_price: int | None = Field(default=None)
+    vacant_land_min_price: int | None = Field(default=None)
+    vacant_land_max_price: int | None = Field(default=None)
+
     bedrooms_min: int | None = Field(default=None)
     bedrooms_max: int | None = Field(default=None)
     bathrooms_min: int | None = Field(default=None)
@@ -60,6 +67,7 @@ class Settings(BaseSettings):
     fibre_internet: bool = Field(default=False)
     property_types: list[str] | None = Field(default=None)
     western_cape_only: bool = Field(default=True)
+    excluded_locations: list[str] | None = Field(default=None)
 
     # Pagination
     pagination_max_pages: int = Field(default=1)
@@ -79,6 +87,13 @@ class Settings(BaseSettings):
         if v is None:
             return None
         return [t.strip().lower() for t in v.split(",")]
+
+    @field_validator("excluded_locations", mode="before")
+    @classmethod
+    def split_excluded_locations(cls, v: str | None) -> list[str] | None:
+        if v is None:
+            return None
+        return [loc.strip().lower() for loc in v.split(",")]
 
     def is_source_enabled(self, name: str) -> bool:
         """Check if a source is enabled by name."""

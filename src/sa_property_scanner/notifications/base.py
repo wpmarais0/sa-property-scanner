@@ -18,11 +18,19 @@ class Notifier(ABC):
     def _format_message(self, payload: NotificationPayload) -> str:
         """Build a human-readable markdown message."""
         listing = payload.listing
+
+        if listing.price is not None:
+            price_display = f"R {listing.price:,.0f}"
+        elif listing.price_text:
+            price_display = listing.price_text
+        else:
+            price_display = "Price on request"
+
         lines = [
             f"🚨 *{payload.event_type.replace('_', ' ').title()}*",
             "",
             f"*{listing.title or 'Property'}*",
-            f"💰 Price: {listing.price_text or f'R {listing.price:,.0f}' if listing.price else 'Price on request'}",
+            f"💰 Price: {price_display}",
         ]
         if listing.location:
             lines.append(f"📍 {listing.location}")

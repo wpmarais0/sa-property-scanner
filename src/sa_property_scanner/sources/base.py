@@ -1,10 +1,13 @@
 """Abstract base class for all property source adapters."""
 
+import json
+import re
 from abc import ABC, abstractmethod
 from typing import Any
 
 import httpx
 import requests
+from bs4 import BeautifulSoup
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from sa_property_scanner.config import settings
@@ -33,6 +36,80 @@ class SourceAdapter(ABC):
     def parse(self, data: str | dict[str, Any]) -> list[RawListing]:
         """Parse raw data into a list of validated RawListing objects."""
         ...
+
+    def verify_price(self, url: str, html: str | None = None) -> int | None:
+        """Fetch a listing's detail page and return the verified price.
+
+        The default implementation attempts several generic extraction strategies
+        on the detail page HTML:
+
+        1. Schema.org ``Offer`` / ``price`` JSON-LD.
+        2. OpenGraph / meta price tags.
+        3. Any element whose class contains "price" and parses to a number.
+
+        Sources with reliable site-specific selectors should override this
+        method. Returns ``None`` if no price could be determined.
+
+        Args:
+            url: The listing detail page URL.
+            html: Optional pre-fetched detail page HTML. If omitted, the source
+                should fetch the page itself.
+        """
+        try:
+            if html is None:
+                html = self.fetch(url)
+            if not isinstance(html, str):
+                return None
+            soup = BeautifulSoup(html, "html.parser")
+        except Exception as exc:
+            self.logger.debug("Could not fetch detail page for verification %s: %s", url, exc)
+            return None
+
+        # 1. Schema.org JSON-LD (Offer / Product / Residence)
+        for script in soup.find_all("script", type="application/ld+json"):
+            if not script or not script.string:
+                continue
+            try:
+                data = json.loads(script.string)
+            except json.JSONDecodeError:
+                continue
+            candidates: list[dict[str, Any]] = []
+            if isinstance(data, list):
+                candidates = data
+            elif isinstance(data, dict):
+                candidates = [data]
+            for item in candidates:
+                if not isinstance(item, dict):
+                    continue
+                item_type = item.get("@type", "")
+                types = item_type if isinstance(item_type, list) else [item_type]
+                if any(t in ("Offer", "Product", "Residence", "SingleFamilyResidence") for t in types):
+                    offer = item.get("offers") or item
+                    if isinstance(offer, dict):
+                        for key in ("price", "Price"):
+                            if key in offer:
+                                price = self._extract_price(str(offer[key]))
+                                if price is not None:
+                                    return price
+
+        # 2. OpenGraph / Twitter / meta price tags
+        for meta in soup.find_all("meta"):
+            prop = str(meta.get("property", "")).lower()
+            name = str(meta.get("name", "")).lower()
+            content = meta.get("content")
+            if content and ("price" in prop or "price" in name or prop in ("og:price:amount",)):
+                price = self._extract_price(str(content))
+                if price is not None:
+                    return price
+
+        # 3. Generic DOM element with "price" in its class
+        for candidate in soup.find_all(class_=lambda c: c and "price" in c.lower()):
+            text = str(candidate.get_text(strip=True))
+            price = self._extract_price(text)
+            if price is not None:
+                return price
+
+        return None
 
     def _http_get(self, url: str, headers: dict[str, str] | None = None) -> str:
         """Polite HTTP GET with retries, user-agent rotation, and configurable delay."""
@@ -71,11 +148,52 @@ class SourceAdapter(ABC):
         return _request()
 
     def _extract_price(self, text: str | None) -> int | None:
-        """Extract the first integer sequence from a price string (handles R, spaces, commas)."""
+        """Extract a price integer from a price string.
+
+        Handles common South African formats such as ``R 1 300 000``,
+        ``R1,300,000`` and shorthand like ``R 1.3 million`` / ``R 1.3m``.
+        """
         if not text:
             return None
-        cleaned = text.replace("R", "").replace(" ", "").replace(",", "").replace("\xa0", "").strip()
-        digits = "".join(ch for ch in cleaned if ch.isdigit())
+
+        normalized = text.replace("R", "").replace("\xa0", " ").strip().lower()
+
+        # Leading shorthand: "1.3 million", "13m", "850k".
+        leading_shorthand = re.match(
+            r"(\d+(?:[.,]\d+)?)\s*(m|million|k|thousand)\b",
+            normalized,
+        )
+        if leading_shorthand:
+            amount = float(leading_shorthand.group(1).replace(",", "."))
+            multiplier = (
+                1_000_000 if leading_shorthand.group(2) in ("m", "million") else 1_000
+            )
+            return int(amount * multiplier)
+
+        # Explicit full price: first contiguous run of digits (with spaces/commas
+        # as thousands separators). Stop at the first non-digit/non-separator.
+        explicit_match = re.match(r"[\d\s,]+", normalized)
+        if explicit_match:
+            raw = explicit_match.group(0).replace(" ", "").replace(",", "")
+            digits = "".join(ch for ch in raw if ch.isdigit())
+            price = int(digits) if digits else None
+            if price is not None and price >= 1_000:
+                return price
+
+        # Fall back to shorthand anywhere in the string.
+        fallback_shorthand = re.search(
+            r"(\d+(?:[.,]\d+)?)\s*(m|million|k|thousand)\b",
+            normalized,
+        )
+        if fallback_shorthand:
+            amount = float(fallback_shorthand.group(1).replace(",", "."))
+            multiplier = (
+                1_000_000 if fallback_shorthand.group(2) in ("m", "million") else 1_000
+            )
+            return int(amount * multiplier)
+
+        # Last resort: any digits at all.
+        digits = "".join(ch for ch in normalized if ch.isdigit())
         return int(digits) if digits else None
 
     def _make_absolute_url(self, base_url: str, href: object) -> str | None:
